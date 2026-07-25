@@ -4,14 +4,14 @@
   "private": true,
   "description": "Decentralized Cross-Border Micro-Payments & Peer-to-Peer FX Settlement on Stellar Soroban",
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
-    "start": "next start",
+    "dev": "node node_modules/next/dist/bin/next dev --webpack",
+    "build": "node node_modules/next/dist/bin/next build --webpack",
+    "start": "node node_modules/next/dist/bin/next start",
     "lint": "eslint .",
     "deploy:contract": "node scripts/deploy.js",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "node node_modules/vitest/vitest.mjs run",
+    "test:watch": "node node_modules/vitest/vitest.mjs",
+    "test:coverage": "node node_modules/vitest/vitest.mjs run --coverage"
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^1.7.3",

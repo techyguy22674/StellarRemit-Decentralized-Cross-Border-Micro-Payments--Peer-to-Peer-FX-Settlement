@@ -428,9 +428,9 @@ mod tests {
         let admin = Address::generate(&env);
 
         client.initialize(&admin);
-        // 1 XLM = 10_000_000 stroops, fee at 50 bps = 5_000 stroops
+        // 1 XLM = 10_000_000 stroops, fee at 50 bps = 50_000 stroops
         let fee = client.get_remittance_fee(&10_000_000i128);
-        assert_eq!(fee, 5_000);
+        assert_eq!(fee, 50_000);
     }
 
     #[test]

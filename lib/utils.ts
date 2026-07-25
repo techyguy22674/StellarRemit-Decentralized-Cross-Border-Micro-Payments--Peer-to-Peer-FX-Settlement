@@ -1,7 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import type { Campaign, CampaignUI, Donation, DonationUI } from "@/types";
-
 // ──────────────────────────────────────────────────────────────────────────────
 // CSS Utilities
 // ──────────────────────────────────────────────────────────────────────────────
@@ -88,38 +86,7 @@ export function formatDeadline(deadline: Date): string {
   return `${months} month${months > 1 ? "s" : ""} left`;
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// Campaign Transform Utilities
-// ──────────────────────────────────────────────────────────────────────────────
 
-/** Convert raw contract Campaign to UI-friendly CampaignUI */
-export function transformCampaign(campaign: Campaign): CampaignUI {
-  const deadline = unixToDate(campaign.deadline);
-  const goal = stroopsToXlm(campaign.goal);
-  const raised = stroopsToXlm(campaign.raised);
-  const progressPercent = goal > 0 ? Math.min(100, (raised / goal) * 100) : 0;
-  const dl = daysRemaining(deadline);
-  const isExpired = dl === 0 && campaign.status === "Active";
-
-  return {
-    ...campaign,
-    goal,
-    raised,
-    deadline,
-    progressPercent,
-    daysLeft: dl,
-    isExpired,
-  };
-}
-
-/** Convert raw Donation to UI-friendly DonationUI */
-export function transformDonation(donation: Donation): DonationUI {
-  return {
-    donor: donation.donor,
-    amount: stroopsToXlm(donation.amount),
-    timestamp: unixToDate(donation.timestamp),
-  };
-}
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Transaction Utilities

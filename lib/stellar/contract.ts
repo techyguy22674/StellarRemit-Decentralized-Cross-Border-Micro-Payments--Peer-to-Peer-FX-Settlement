@@ -17,6 +17,7 @@ import {
   Address,
   scValToNative,
   xdr,
+  Account,
 } from "@stellar/stellar-sdk";
 import { rpc as SorobanRpc } from "@stellar/stellar-sdk";
 import {
@@ -69,7 +70,7 @@ export class StellarRemitClient {
       const operation = contract.call("get_fx_rate", nativeToScVal(corridorId, { type: "symbol" }));
 
       const dummyTx = new TransactionBuilder(
-        new SorobanRpc.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
+        new Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
         { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
       )
         .addOperation(operation)
@@ -94,7 +95,7 @@ export class StellarRemitClient {
       const operation = contract.call("get_stats");
 
       const dummyTx = new TransactionBuilder(
-        new SorobanRpc.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
+        new Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
         { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
       )
         .addOperation(operation)
@@ -127,7 +128,7 @@ export class StellarRemitClient {
       );
 
       const dummyTx = new TransactionBuilder(
-        new SorobanRpc.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
+        new Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
         { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
       )
         .addOperation(operation)
@@ -174,7 +175,7 @@ export class StellarRemitClient {
         return { success: false, error: "Sender account not found on network" };
       }
       const accountData = await accountRes.json();
-      const account = new SorobanRpc.Account(senderAddress, accountData.sequence);
+      const account = new Account(senderAddress, accountData.sequence);
 
       const tx = new TransactionBuilder(account, {
         fee: (parseInt(BASE_FEE) * 10).toString(),
@@ -190,10 +191,10 @@ export class StellarRemitClient {
       }
 
       const assembled = SorobanRpc.assembleTransaction(tx, sim);
-      const xdrString = assembled.toXDR();
+      const xdrString = assembled.build().toXDR();
 
-      const { signedXdr } = await kit.signTransaction(xdrString);
-      const signedTx = TransactionBuilder.fromXDR(signedXdr, this.networkPassphrase);
+      const { signedTxXdr } = await kit.signTransaction(xdrString);
+      const signedTx = TransactionBuilder.fromXDR(signedTxXdr, this.networkPassphrase);
 
       const response = await this.rpc.sendTransaction(signedTx);
       if (response.status === "ERROR") {
@@ -233,7 +234,7 @@ export class StellarRemitClient {
         return { success: false, error: "Admin account not found on network" };
       }
       const accountData = await accountRes.json();
-      const account = new SorobanRpc.Account(adminAddress, accountData.sequence);
+      const account = new Account(adminAddress, accountData.sequence);
 
       const tx = new TransactionBuilder(account, {
         fee: (parseInt(BASE_FEE) * 10).toString(),
@@ -249,10 +250,10 @@ export class StellarRemitClient {
       }
 
       const assembled = SorobanRpc.assembleTransaction(tx, sim);
-      const xdrString = assembled.toXDR();
+      const xdrString = assembled.build().toXDR();
 
-      const { signedXdr } = await kit.signTransaction(xdrString);
-      const signedTx = TransactionBuilder.fromXDR(signedXdr, this.networkPassphrase);
+      const { signedTxXdr } = await kit.signTransaction(xdrString);
+      const signedTx = TransactionBuilder.fromXDR(signedTxXdr, this.networkPassphrase);
 
       const response = await this.rpc.sendTransaction(signedTx);
       if (response.status === "ERROR") {

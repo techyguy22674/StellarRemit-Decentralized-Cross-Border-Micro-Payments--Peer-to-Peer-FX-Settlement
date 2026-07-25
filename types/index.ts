@@ -1,5 +1,5 @@
 // ──────────────────────────────────────────────────────────────────────────────
-// Stellar / Soroban Types
+// Stellar / Soroban Types — StellarRemit
 // ──────────────────────────────────────────────────────────────────────────────
 
 export type Network = "testnet" | "mainnet" | "futurenet";
@@ -27,47 +27,23 @@ export interface WalletState {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Campaign Types (mirrors the Soroban contract)
+// Remittance Protocol Types
 // ──────────────────────────────────────────────────────────────────────────────
 
-export type CampaignStatus = "Active" | "Successful" | "Expired" | "Withdrawn";
-
-export interface Campaign {
-  id: number;
-  creator: string;
-  title: string;
-  description: string;
-  goal: bigint; // in stroops
-  deadline: bigint; // unix timestamp
-  raised: bigint; // in stroops
-  status: CampaignStatus;
+export interface RemittanceCorridor {
+  id: string;          // Symbol name used in contract (e.g. "XLMINR")
+  label: string;       // Display label (e.g. "XLM → INR")
+  from: string;        // Source currency
+  to: string;          // Destination currency
+  flag: string;        // Emoji flag for destination
+  rateDisplay: string; // Seed rate
 }
 
-export interface CampaignUI extends Omit<Campaign, "goal" | "deadline" | "raised"> {
-  goal: number; // in XLM
-  deadline: Date;
-  raised: number; // in XLM
-  progressPercent: number;
-  daysLeft: number;
-  isExpired: boolean;
-}
-
-export interface Donation {
-  donor: string;
-  amount: bigint; // in stroops
-  timestamp: bigint; // unix timestamp
-}
-
-export interface DonationUI extends Omit<Donation, "amount" | "timestamp"> {
-  amount: number; // in XLM
-  timestamp: Date;
-}
-
-export interface CreateCampaignParams {
-  title: string;
-  description: string;
-  goal: number; // in XLM
-  durationDays: number;
+export interface FxQuoteUI {
+  amountOut: number;
+  feeXlm: number;
+  rate: number;
+  priceImpactBps: number;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -76,11 +52,10 @@ export interface CreateCampaignParams {
 
 export type TransactionStatus = "pending" | "success" | "failed";
 export type TransactionType =
-  | "create_campaign"
-  | "donate"
-  | "withdraw"
-  | "refund"
-  | "initialize";
+  | "send_remittance"
+  | "set_fx_rate"
+  | "initialize"
+  | "mint_srt";
 
 export interface Transaction {
   id: string;
@@ -88,7 +63,7 @@ export interface Transaction {
   type: TransactionType;
   status: TransactionStatus;
   timestamp: Date;
-  campaignId?: number;
+  corridorId?: string;
   amount?: number; // in XLM
   description: string;
   error?: string;
@@ -99,10 +74,9 @@ export interface Transaction {
 // ──────────────────────────────────────────────────────────────────────────────
 
 export type EventType =
-  | "campaign_created"
-  | "donation_made"
-  | "funds_withdrawn"
-  | "refund_issued";
+  | "remittance_sent"
+  | "fx_rate_updated"
+  | "srt_minted";
 
 export interface ContractEvent {
   id: string;
@@ -110,7 +84,7 @@ export interface ContractEvent {
   timestamp: Date;
   ledger: number;
   txHash: string;
-  campaignId: number;
+  corridorId: string;
   walletAddress: string;
   amount?: number; // in XLM
   description: string;
@@ -127,10 +101,4 @@ export interface ToastMessage {
   description?: string;
   txHash?: string;
   duration?: number;
-}
-
-export interface ModalState {
-  createCampaign: boolean;
-  donate: boolean;
-  wallet: boolean;
 }

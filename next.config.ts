@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@stellar/stellar-sdk"],
+  turbopack: {},
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {
@@ -18,10 +19,8 @@ const nextConfig: NextConfig = {
         assert: false,
         os: false,
         path: false,
-        buffer: require.resolve("buffer/"),
       };
     }
-    config.externals = config.externals || [];
     return config;
   },
 };
