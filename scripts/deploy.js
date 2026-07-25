@@ -70,22 +70,31 @@ async function withRetry(fn, retries = 6, delayMs = 3000) {
   throw lastErr;
 }
 
-/** Poll Soroban RPC until TX is confirmed */
+/** Poll Soroban RPC (with Horizon fallback) until TX is confirmed */
 async function waitForTx(rpc, hash, maxAttempts = 60) {
   for (let i = 0; i < maxAttempts; i++) {
-    await sleep(2000);
+    await sleep(2500);
     try {
       const status = await withRetry(() => rpc.getTransaction(hash));
       if (status.status === "SUCCESS") {
         return status;
       }
       if (status.status === "FAILED") {
-        throw new Error(`Transaction failed: ${JSON.stringify(status)}`);
+        throw new Error(`Transaction failed on-chain: ${hash}`);
       }
     } catch (err) {
-      if (!err.message?.includes("404") && !err.message?.includes("NOT_FOUND")) {
-        throw err;
+      try {
+        const res = await fetch(`${HORIZON_URL}/transactions/${hash}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.successful) {
+            return { status: "SUCCESS" };
+          }
+        }
+      } catch {
+        // ignore horizon fallback error and continue retry loop
       }
+      if (i === maxAttempts - 1) throw err;
     }
   }
   throw new Error(`Transaction not confirmed after ${maxAttempts} attempts: ${hash}`);
@@ -111,28 +120,18 @@ async function uploadWasm(rpc, horizon, keypair, wasmPath) {
   }
 
   const assembled = assembleTransaction(tx, sim);
-  assembled.sign(keypair);
+  const signedTx = assembled.build();
+  signedTx.sign(keypair);
 
-  const submitResult = await withRetry(() => rpc.sendTransaction(assembled));
+  const submitResult = await withRetry(() => rpc.sendTransaction(signedTx));
   if (submitResult.status === "ERROR") {
     throw new Error(`Upload submit error: ${JSON.stringify(submitResult)}`);
   }
 
   console.log(`  → Upload TX: ${submitResult.hash}`);
-  const txResult = await waitForTx(rpc, submitResult.hash);
+  await waitForTx(rpc, submitResult.hash);
 
-  const meta = txResult.resultMetaXdr;
-  const metaParsed = xdr.TransactionMeta.fromXDR(meta, "base64");
-
-  let wasmHash;
-  try {
-    const ops = metaParsed.v3().sorobanMeta().returnValue();
-    wasmHash = ops.bytes().toString("hex");
-  } catch {
-    // Fallback: SHA-256 of wasm bytes
-    wasmHash = crypto.createHash("sha256").update(wasmBuffer).digest("hex");
-  }
-
+  const wasmHash = crypto.createHash("sha256").update(wasmBuffer).digest("hex");
   console.log(`  → WASM hash: ${wasmHash}`);
   return { hash: wasmHash, txHash: submitResult.hash };
 }
@@ -162,9 +161,10 @@ async function createContract(rpc, horizon, keypair, wasmHash) {
   }
 
   const assembled = assembleTransaction(tx, sim);
-  assembled.sign(keypair);
+  const signedTx = assembled.build();
+  signedTx.sign(keypair);
 
-  const submitResult = await withRetry(() => rpc.sendTransaction(assembled));
+  const submitResult = await withRetry(() => rpc.sendTransaction(signedTx));
   if (submitResult.status === "ERROR") {
     throw new Error(`Create submit error: ${JSON.stringify(submitResult)}`);
   }
@@ -211,9 +211,10 @@ async function invokeContract(rpc, horizon, keypair, contractId, method, args = 
   }
 
   const assembled = assembleTransaction(tx, sim);
-  assembled.sign(keypair);
+  const signedTx = assembled.build();
+  signedTx.sign(keypair);
 
-  const submitResult = await withRetry(() => rpc.sendTransaction(assembled));
+  const submitResult = await withRetry(() => rpc.sendTransaction(signedTx));
   if (submitResult.status === "ERROR") {
     throw new Error(`${method} submit error: ${JSON.stringify(submitResult)}`);
   }
@@ -282,17 +283,26 @@ async function main() {
     process.exit(1);
   }
 
-  // Get deployer secret key
-  const secretKey = process.env.STELLAR_SECRET_KEY;
-  if (!secretKey || !StrKey.isValidEd25519SecretSeed(secretKey)) {
-    console.error("❌ STELLAR_SECRET_KEY environment variable not set or invalid.");
-    console.error("   Export your secret key: export STELLAR_SECRET_KEY=S...");
-    process.exit(1);
+  // Get deployer secret key (or auto-generate & fund via Friendbot if missing)
+  let keypair;
+  let secretKey = process.env.STELLAR_SECRET_KEY;
+  if (secretKey && StrKey.isValidEd25519SecretSeed(secretKey)) {
+    keypair = Keypair.fromSecret(secretKey);
+    console.log(`🔑 Deployer (from env): ${keypair.publicKey()}`);
+  } else {
+    console.log("⚠️ STELLAR_SECRET_KEY not set. Auto-generating testnet deployer account...");
+    keypair = Keypair.random();
+    console.log(`🔑 Auto-generated Deployer Public Key: ${keypair.publicKey()}`);
+    console.log(`🔑 Auto-generated Deployer Secret Key: ${keypair.secret()}`);
+    console.log("💸 Funding deployer account via Stellar Friendbot...");
+    const friendbotRes = await fetch(`https://friendbot.stellar.org?addr=${encodeURIComponent(keypair.publicKey())}`);
+    if (!friendbotRes.ok) {
+      throw new Error(`Friendbot funding failed: ${await friendbotRes.text()}`);
+    }
+    console.log("  ✅ Deployer account funded with 10,000 Testnet XLM!");
+    await sleep(3000);
   }
-
-  const keypair = Keypair.fromSecret(secretKey);
   const deployerAddress = keypair.publicKey();
-  console.log(`🔑 Deployer: ${deployerAddress}`);
 
   const rpc = new RpcServer(RPC_URL);
   const horizon = new Horizon.Server(HORIZON_URL);

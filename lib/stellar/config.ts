@@ -18,23 +18,23 @@ export const STELLAR_CONFIG: StellarConfig = {
     "https://horizon-testnet.stellar.org",
   contractId:
     process.env.NEXT_PUBLIC_STELLAR_REMIT_CONTRACT_ID ||
-    "CDIUMYZYWNPFOAAYO3L5ULQMQCYBLKVOUXFKHARVCUYZLKUIRQERRLVM",
+    "CBSADMCXP32LOXM5MB7Q44HYVCUNOXZTMN6XXITNLTFFRTYRAIXIRBCT",
   rewardTokenId:
     process.env.NEXT_PUBLIC_SRT_TOKEN_CONTRACT_ID ||
-    "CDXJJX2COYKB5MQX5OL235JYRCHGT6FJOIOCPB3T4KDKTXYGRBURH4L6",
+    "CBCLW5ZUAN2YN677JC2672QMGAPDMWIUZWLOVAACCWU66SNS7KSIYIZN",
 };
 
-/** StellarRemit main contract ID */
+/** StellarRemit main contract ID (Deployed on Testnet) */
 export const REMIT_CONTRACT_ID: string =
   process.env.NEXT_PUBLIC_STELLAR_REMIT_CONTRACT_ID ||
   STELLAR_CONFIG.contractId ||
-  "CDIUMYZYWNPFOAAYO3L5ULQMQCYBLKVOUXFKHARVCUYZLKUIRQERRLVM";
+  "CBSADMCXP32LOXM5MB7Q44HYVCUNOXZTMN6XXITNLTFFRTYRAIXIRBCT";
 
-/** StellarRemit Token (SRT) contract ID */
+/** StellarRemit Token (SRT) contract ID (Deployed on Testnet) */
 export const SRT_TOKEN_CONTRACT_ID: string =
   process.env.NEXT_PUBLIC_SRT_TOKEN_CONTRACT_ID ||
   STELLAR_CONFIG.rewardTokenId ||
-  "CDXJJX2COYKB5MQX5OL235JYRCHGT6FJOIOCPB3T4KDKTXYGRBURH4L6";
+  "CBCLW5ZUAN2YN677JC2672QMGAPDMWIUZWLOVAACCWU66SNS7KSIYIZN";
 
 /** Testnet native XLM SAC address */
 export const NATIVE_TOKEN_ADDRESS =
@@ -85,7 +85,7 @@ export const CORRIDORS: Corridor[] = [
   { id: "XLMMXN", label: "XLM → MXN", from: "XLM", to: "MXN", flag: "🇲🇽", rateDisplay: "1.70" },
 ];
 
-// Backwards compat aliases (for any old references)
+// Backwards compat aliases
 export const POOL_CONTRACT_ID = REMIT_CONTRACT_ID;
 export const SPL_TOKEN_CONTRACT_ID = SRT_TOKEN_CONTRACT_ID;
 export const SWAP_FEE_BPS = REMIT_FEE_BPS;
