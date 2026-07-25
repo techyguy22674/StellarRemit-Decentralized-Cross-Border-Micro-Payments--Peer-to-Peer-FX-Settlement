@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useWalletStore } from "@/store/wallet-store";
 import {
   openWalletModal,
@@ -40,13 +40,6 @@ export function useWallet() {
     },
     [store]
   );
-
-  // Automatically fetch balances whenever wallet is connected and balance is null
-  useEffect(() => {
-    if (store.isConnected && store.address && store.balance === null) {
-      fetchAllBalances(store.address);
-    }
-  }, [store.isConnected, store.address, store.balance, fetchAllBalances]);
 
   /** Open the wallet selection modal and connect */
   const connect = useCallback(async () => {
@@ -98,7 +91,6 @@ export function useWallet() {
         await fetchAllBalances(address);
       }
     } catch {
-      // Fallback: fetch balances for saved address
       if (store.address) {
         await fetchAllBalances(store.address);
       }

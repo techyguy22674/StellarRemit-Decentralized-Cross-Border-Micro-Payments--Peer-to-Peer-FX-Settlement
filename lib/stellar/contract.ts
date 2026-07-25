@@ -8,27 +8,23 @@
  * get_stats, get_remittance_fee, and SRT token queries.
  */
 
+import * as StellarSdk from "@stellar/stellar-sdk";
 import {
   Contract,
   TransactionBuilder,
-  Networks,
   BASE_FEE,
   nativeToScVal,
   Address,
   scValToNative,
-  xdr,
-  Account,
 } from "@stellar/stellar-sdk";
 import { rpc as SorobanRpc } from "@stellar/stellar-sdk";
 import {
   STELLAR_CONFIG,
   REMIT_CONTRACT_ID,
   SRT_TOKEN_CONTRACT_ID,
-  REMIT_FEE_BPS,
   STROOPS_PER_XLM,
 } from "./config";
 import type { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
-import type { ContractEvent } from "@/types";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,6 +46,12 @@ export type ContractCallResult<T> =
   | { success: true; value: T; txHash?: string }
   | { success: false; error: string };
 
+// ── Helper to build a dummy Account for simulations ─────────────────────────
+
+function makeDummyAccount(): StellarSdk.Account {
+  return new StellarSdk.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0");
+}
+
 // ── Contract Client Class ───────────────────────────────────────────────────
 
 export class StellarRemitClient {
@@ -69,10 +71,10 @@ export class StellarRemitClient {
       const contract = new Contract(REMIT_CONTRACT_ID);
       const operation = contract.call("get_fx_rate", nativeToScVal(corridorId, { type: "symbol" }));
 
-      const dummyTx = new TransactionBuilder(
-        new Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
-        { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
-      )
+      const dummyTx = new TransactionBuilder(makeDummyAccount(), {
+        fee: BASE_FEE,
+        networkPassphrase: this.networkPassphrase,
+      })
         .addOperation(operation)
         .setTimeout(30)
         .build();
@@ -94,10 +96,10 @@ export class StellarRemitClient {
       const contract = new Contract(REMIT_CONTRACT_ID);
       const operation = contract.call("get_stats");
 
-      const dummyTx = new TransactionBuilder(
-        new Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
-        { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
-      )
+      const dummyTx = new TransactionBuilder(makeDummyAccount(), {
+        fee: BASE_FEE,
+        networkPassphrase: this.networkPassphrase,
+      })
         .addOperation(operation)
         .setTimeout(30)
         .build();
@@ -127,10 +129,10 @@ export class StellarRemitClient {
         new Address(ownerAddress).toScVal()
       );
 
-      const dummyTx = new TransactionBuilder(
-        new Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
-        { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
-      )
+      const dummyTx = new TransactionBuilder(makeDummyAccount(), {
+        fee: BASE_FEE,
+        networkPassphrase: this.networkPassphrase,
+      })
         .addOperation(operation)
         .setTimeout(30)
         .build();
@@ -175,7 +177,7 @@ export class StellarRemitClient {
         return { success: false, error: "Sender account not found on network" };
       }
       const accountData = await accountRes.json();
-      const account = new Account(senderAddress, accountData.sequence);
+      const account = new StellarSdk.Account(senderAddress, accountData.sequence);
 
       const tx = new TransactionBuilder(account, {
         fee: (parseInt(BASE_FEE) * 10).toString(),
@@ -234,7 +236,7 @@ export class StellarRemitClient {
         return { success: false, error: "Admin account not found on network" };
       }
       const accountData = await accountRes.json();
-      const account = new Account(adminAddress, accountData.sequence);
+      const account = new StellarSdk.Account(adminAddress, accountData.sequence);
 
       const tx = new TransactionBuilder(account, {
         fee: (parseInt(BASE_FEE) * 10).toString(),

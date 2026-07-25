@@ -35,16 +35,21 @@ function getQueryClient() {
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
-// Wallet Restorer
+// Wallet Restorer Component (Single Mount point for session & balance loading)
 // ──────────────────────────────────────────────────────────────────────────────
 
 function WalletRestorer() {
-  const { restoreWallet } = useWallet();
+  const { isConnected, address, balance, restoreWallet, refreshBalance } = useWallet();
 
   useEffect(() => {
-    // Try to restore wallet session on mount
     restoreWallet();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (isConnected && address && balance === null) {
+      refreshBalance();
+    }
+  }, [isConnected, address, balance, refreshBalance]);
 
   return null;
 }
