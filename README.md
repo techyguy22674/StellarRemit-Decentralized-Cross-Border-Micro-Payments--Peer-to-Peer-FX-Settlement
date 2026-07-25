@@ -22,10 +22,24 @@
 |---|---|
 | 🌐 **Live Vercel App** | *(Deploy to Vercel and update)* |
 | 📹 **Demo Video** | *(Record and update)* |
-| 🏦 **StellarRemit Contract** | `NEXT_PUBLIC_STELLAR_REMIT_CONTRACT_ID=CBSADMCXP32LOXM5MB7Q44HYVCUNOXZTMN6XXITNLTFFRTYRAIXIRBCT |
-| 🪙 **SRT Token Contract** | `NEXT_PUBLIC_SRT_TOKEN_CONTRACT_ID=CBCLW5ZUAN2YN677JC2672QMGAPDMWIUZWLOVAACCWU66SNS7KSIYIZN |
-| 🔍 **Stellar Explorer (Remit)** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDIUMYZYWNPFOAAYO3L5ULQMQCYBLKVOUXFKHARVCUYZLKUIRQERRLVM) |
-| 🔍 **Stellar Explorer (SRT)** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDXJJX2COYKB5MQX5OL235JYRCHGT6FJOIOCPB3T4KDKTXYGRBURH4L6) |
+| 🏦 **StellarRemit Contract** | `CBSADMCXP32LOXM5MB7Q44HYVCUNOXZTMN6XXITNLTFFRTYRAIXIRBCT` |
+| 🪙 **SRT Token Contract** | `CBCLW5ZUAN2YN677JC2672QMGAPDMWIUZWLOVAACCWU66SNS7KSIYIZN` |
+| 🔍 **Stellar Explorer (Remit)** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CBSADMCXP32LOXM5MB7Q44HYVCUNOXZTMN6XXITNLTFFRTYRAIXIRBCT) |
+| 🔍 **Stellar Explorer (SRT)** | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CBCLW5ZUAN2YN677JC2672QMGAPDMWIUZWLOVAACCWU66SNS7KSIYIZN) |
+
+---
+
+## 📸 Screenshots
+
+<div align="center">
+
+### 📊 StellarRemit Protocol Dashboard & Live Balances
+![StellarRemit Dashboard](photos/dashboard.png)
+
+### 🔍 Stellar Testnet Explorer Verified Smart Contract
+![Stellar Expert Explorer](photos/steller-expert.png)
+
+</div>
 
 ---
 
