@@ -270,3 +270,30 @@ export class StellarRemitClient {
 }
 
 export const remitClient = new StellarRemitClient();
+
+/** Fetch native XLM balance for an address from Horizon API */
+export async function fetchXlmBalance(address: string): Promise<string> {
+  try {
+    const res = await fetch(`${STELLAR_CONFIG.horizonUrl}/accounts/${address}`);
+    if (!res.ok) return "0";
+    const data = await res.json();
+    const nativeBalance = data.balances?.find(
+      (b: { asset_type: string; balance: string }) => b.asset_type === "native"
+    );
+    return nativeBalance ? nativeBalance.balance : "0";
+  } catch (err) {
+    console.error("Error fetching XLM balance:", err);
+    return "0";
+  }
+}
+
+/** Fetch SRT token reward balance for an address from Soroban contract */
+export async function fetchRewardBalance(address: string): Promise<number> {
+  try {
+    const balanceBigInt = await remitClient.getSrtBalance(address);
+    return Number(balanceBigInt);
+  } catch (err) {
+    console.error("Error fetching SRT reward balance:", err);
+    return 0;
+  }
+}

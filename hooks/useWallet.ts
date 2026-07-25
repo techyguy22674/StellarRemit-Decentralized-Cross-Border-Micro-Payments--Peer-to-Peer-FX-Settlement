@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useWalletStore } from "@/store/wallet-store";
 import {
   openWalletModal,
@@ -19,15 +19,34 @@ import { parseContractError } from "@/lib/utils";
 export function useWallet() {
   const store = useWalletStore();
 
-  /** Fetch both XLM and CRWD reward balances for an address */
-  const fetchAllBalances = useCallback(async (address: string) => {
-    const [balance, rewardBalance] = await Promise.allSettled([
-      fetchXlmBalance(address),
-      fetchRewardBalance(address),
-    ]);
-    if (balance.status === "fulfilled") store.setBalance(balance.value);
-    if (rewardBalance.status === "fulfilled") store.setRewardBalance(rewardBalance.value);
-  }, [store]);
+  /** Fetch both XLM and SRT reward balances for an address */
+  const fetchAllBalances = useCallback(
+    async (address: string) => {
+      try {
+        const [balanceResult, rewardResult] = await Promise.allSettled([
+          fetchXlmBalance(address),
+          fetchRewardBalance(address),
+        ]);
+
+        if (balanceResult.status === "fulfilled") {
+          store.setBalance(balanceResult.value);
+        }
+        if (rewardResult.status === "fulfilled") {
+          store.setRewardBalance(rewardResult.value);
+        }
+      } catch (err) {
+        console.error("Error in fetchAllBalances:", err);
+      }
+    },
+    [store]
+  );
+
+  // Automatically fetch balances whenever wallet is connected and balance is null
+  useEffect(() => {
+    if (store.isConnected && store.address && store.balance === null) {
+      fetchAllBalances(store.address);
+    }
+  }, [store.isConnected, store.address, store.balance, fetchAllBalances]);
 
   /** Open the wallet selection modal and connect */
   const connect = useCallback(async () => {
@@ -38,11 +57,10 @@ export function useWallet() {
       const { walletId, address } = await openWalletModal();
       store.setConnected(address, walletId);
 
-      // Fetch XLM + CRWD reward balances in parallel
+      // Fetch XLM + SRT reward balances in parallel
       await fetchAllBalances(address);
     } catch (err) {
       const message = parseContractError(err);
-      // Ignore "modal closed" errors
       if (!message.includes("closed without")) {
         store.setError(message);
       } else {
@@ -57,7 +75,7 @@ export function useWallet() {
     store.setDisconnected();
   }, [store]);
 
-  /** Refresh the XLM + CRWD balances */
+  /** Refresh the XLM + SRT balances */
   const refreshBalance = useCallback(async () => {
     if (!store.address) return;
     try {
@@ -69,20 +87,21 @@ export function useWallet() {
 
   /** Restore wallet from persisted state on page load */
   const restoreWallet = useCallback(async () => {
-    if (!store.isConnected || !store.walletId) return;
+    if (!store.isConnected || !store.address) return;
 
     try {
-      setActiveWallet(store.walletId);
-      const address = await getConnectedAddress();
-
-      if (address && address === store.address) {
+      if (store.walletId) {
+        setActiveWallet(store.walletId);
+      }
+      const address = (await getConnectedAddress()) || store.address;
+      if (address) {
         await fetchAllBalances(address);
-      } else {
-        // Session expired, disconnect
-        store.setDisconnected();
       }
     } catch {
-      store.setDisconnected();
+      // Fallback: fetch balances for saved address
+      if (store.address) {
+        await fetchAllBalances(store.address);
+      }
     }
   }, [store, fetchAllBalances]);
 

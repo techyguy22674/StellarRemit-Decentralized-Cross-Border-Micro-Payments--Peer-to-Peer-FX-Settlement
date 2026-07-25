@@ -64,7 +64,7 @@ export const useWalletStore = create<WalletStore>()(
       setError: (error) => set({ error, isConnecting: false }),
     }),
     {
-      name: "crowdfund-wallet",
+      name: "stellar-remit-wallet",
       // Only persist non-sensitive state
       partialize: (state) => ({
         address: state.address,

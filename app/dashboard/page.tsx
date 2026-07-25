@@ -6,6 +6,7 @@ import {
   ExternalLink, Copy, CheckCircle2, RefreshCw, Droplets,
 } from "lucide-react";
 import { DEPLOYER_ADDRESS, REMIT_CONTRACT_ID, SRT_TOKEN_CONTRACT_ID, NATIVE_TOKEN_ADDRESS } from "@/lib/stellar/config";
+import { useWallet } from "@/hooks/useWallet";
 
 // ── Mock data (replaced by real wallet queries when connected) ───────────────
 
@@ -48,13 +49,13 @@ function shortAddress(addr: string) {
 }
 
 export default function DashboardPage() {
+  const { isConnected, address, balance, rewardBalance, refreshBalance } = useWallet();
   const [copied, setCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Placeholder balances — replaced by live wallet data when connected
-  const xlmBalance = 0;
-  const splBalance = 0;
-  const connectedAddress = "";
+  const xlmBalance = balance ? parseFloat(balance) : 0;
+  const srtBalance = rewardBalance !== null ? rewardBalance / 10_000_000 : 0;
+  const connectedAddress = address || "";
 
   function handleCopy(text: string) {
     navigator.clipboard.writeText(text);
@@ -62,9 +63,10 @@ export default function DashboardPage() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  function handleRefresh() {
+  async function handleRefresh() {
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 1200);
+    await refreshBalance();
+    setIsLoading(false);
   }
 
   return (
@@ -176,7 +178,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <p className="text-3xl font-extrabold text-slate-900">
-              {splBalance.toLocaleString("en-US", { minimumFractionDigits: 4 })}
+              {srtBalance.toLocaleString("en-US", { minimumFractionDigits: 4 })}
             </p>
             <p className="text-sm text-slate-500 font-medium mt-1">
               SRT · StellarRemit Reward Token
