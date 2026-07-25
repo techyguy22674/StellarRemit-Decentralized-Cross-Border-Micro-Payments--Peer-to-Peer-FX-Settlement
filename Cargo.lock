@@ -903,13 +903,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pool_token"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk",
-]
-
-[[package]]
 name = "powerfmt"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1009,6 +1002,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.118",
+]
+
+[[package]]
+name = "remit_token"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -1442,7 +1442,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "stellar_pool"
+name = "stellar_remit"
 version = "0.1.0"
 dependencies = [
  "soroban-sdk",
