@@ -10,7 +10,7 @@
 
 **Send XLM. Settle in any currency. Instantly. On-chain. No banks.**
 
-[🌐 Live App](#) · [📹 Demo Video](#) · [🔍 Contract Explorer](#-live-links--contracts) · [📁 GitHub](https://github.com/techyguy22674/StellarRemit-Decentralized-Cross-Border-Micro-Payments--Peer-to-Peer-FX-Settlement)
+[🌐 Live App](https://stellar-remit-decentralized-cross-b.vercel.app) · [📹 Demo Video](#) · [🔍 Contract Explorer](#-live-links--contracts) · [📁 GitHub](https://github.com/techyguy22674/StellarRemit-Decentralized-Cross-Border-Micro-Payments--Peer-to-Peer-FX-Settlement)
 
 </div>
 
@@ -20,7 +20,7 @@
 
 | Resource | Link |
 |---|---|
-| 🌐 **Live Vercel App** | *(Deploy to Vercel and update)* |
+| 🌐 **Live Vercel App** | [https://stellar-remit-decentralized-cross-b.vercel.app](https://stellar-remit-decentralized-cross-b.vercel.app) |
 | 📹 **Demo Video** | *(Record and update)* |
 | 🏦 **StellarRemit Contract** | `CBSADMCXP32LOXM5MB7Q44HYVCUNOXZTMN6XXITNLTFFRTYRAIXIRBCT` |
 | 🪙 **SRT Token Contract** | `CBCLW5ZUAN2YN677JC2672QMGAPDMWIUZWLOVAACCWU66SNS7KSIYIZN` |
