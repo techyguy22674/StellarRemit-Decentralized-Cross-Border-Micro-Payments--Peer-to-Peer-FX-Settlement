@@ -1,0 +1,513 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   StellarRemit — Global Styles
+   Decentralized Cross-Border Micro-Payments & Peer-to-Peer FX Settlement
+   Palette: Emerald Green (#10B981) + Amber Gold (#F59E0B) on near-black bg
+   ───────────────────────────────────────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+
+/* ── Tailwind Directives ──────────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties ───────────────────────────────────────────────── */
+:root {
+  /* Brand Colors */
+  --color-primary:      #10B981;   /* Emerald green */
+  --color-primary-dark: #059669;
+  --color-primary-light:#34D399;
+  --color-accent:       #F59E0B;   /* Amber gold */
+  --color-accent-dark:  #D97706;
+  --color-accent-light: #FCD34D;
+
+  /* Backgrounds */
+  --color-bg:           #0A0F0D;   /* Near-black with green tint */
+  --color-surface:      #111F18;   /* Dark green card surface */
+  --color-surface-2:    #1A2E23;   /* Slightly lighter surface */
+  --color-border:       #1F3329;   /* Subtle green border */
+  --color-border-light: #2D4A38;
+
+  /* Text */
+  --color-text-primary: #E8F5E9;
+  --color-text-secondary:#A7C4AE;
+  --color-text-muted:   #5A7A62;
+
+  /* Semantic */
+  --color-success:  #10B981;
+  --color-warning:  #F59E0B;
+  --color-error:    #EF4444;
+  --color-info:     #38BDF8;
+
+  /* Spacing & Radius */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-2xl: 32px;
+
+  /* Shadows */
+  --shadow-glow:   0 0 20px rgba(16, 185, 129, 0.25);
+  --shadow-glow-amber: 0 0 20px rgba(245, 158, 11, 0.25);
+  --shadow-card:   0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-hover:  0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ── Base Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: "Inter", var(--font-jakarta), system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── Typography ──────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+}
+
+p { color: var(--color-text-secondary); }
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+a:hover { color: var(--color-primary-light); }
+
+/* ── Gradient Text ───────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-amber {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glass Cards ─────────────────────────────────────────────────────────── */
+.glass-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--color-border-light);
+  box-shadow: var(--shadow-hover);
+}
+
+.glass-card-elevated {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-hover);
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.btn-stellar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
+  overflow: hidden;
+  letter-spacing: 0.01em;
+}
+
+.btn-stellar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.btn-stellar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
+}
+
+.btn-stellar:hover::before { opacity: 1; }
+.btn-stellar:active { transform: translateY(0); }
+.btn-stellar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Amber accent button */
+.btn-amber {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+}
+.btn-amber:hover {
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.45);
+}
+
+/* Ghost / secondary button */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.btn-ghost:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(16, 185, 129, 0.06);
+}
+
+/* ── Input Fields ────────────────────────────────────────────────────────── */
+.input-stellar {
+  width: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-stellar::placeholder { color: var(--color-text-muted); }
+
+.input-stellar:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  color: var(--color-text-primary);
+  background: rgba(16, 185, 129, 0.06);
+  border-color: var(--color-border);
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
+  font-weight: 600;
+}
+
+/* ── Stellar Gradient Bar ────────────────────────────────────────────────── */
+.stream-bar {
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-primary));
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+  border-radius: 999px;
+}
+
+/* ── Status Dots ─────────────────────────────────────────────────────────── */
+.dot-active {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.dot-pending {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.dot-error {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-error);
+  box-shadow: 0 0 8px var(--color-error);
+}
+
+/* ── Shadow Utilities ────────────────────────────────────────────────────── */
+.shadow-glow       { box-shadow: var(--shadow-glow); }
+.shadow-glow-amber { box-shadow: var(--shadow-glow-amber); }
+.shadow-glow-stream { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3); }
+
+/* ── Background Gradient ─────────────────────────────────────────────────── */
+.bg-stellar-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+
+.bg-amber-gradient {
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-dark) 100%);
+}
+
+/* ── Badge ───────────────────────────────────────────────────────────────── */
+.badge-emerald {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: var(--color-primary-light);
+}
+
+.badge-amber {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--color-accent-light);
+}
+
+/* ── Globe Animation (Homepage) ──────────────────────────────────────────── */
+.globe-container {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  margin: 0 auto;
+}
+
+.globe-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  animation: rotate-globe 20s linear infinite;
+}
+
+.globe-ring:nth-child(2) {
+  transform: rotateX(60deg);
+  animation-duration: 15s;
+  animation-direction: reverse;
+}
+
+.globe-ring:nth-child(3) {
+  transform: rotateY(60deg);
+  animation-duration: 25s;
+}
+
+.globe-dot {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 12px var(--color-primary);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+.globe-arrow {
+  position: absolute;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-primary), transparent);
+  transform-origin: bottom center;
+  animation: send-arrow 3s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+/* ── Stats Ticker ─────────────────────────────────────────────────────────── */
+.stats-ticker {
+  display: flex;
+  gap: 2rem;
+  overflow: hidden;
+}
+
+.ticker-track {
+  display: flex;
+  gap: 2rem;
+  animation: ticker 20s linear infinite;
+  white-space: nowrap;
+}
+
+/* ── Keyframe Animations ─────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.85); }
+}
+
+@keyframes animate-fade-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rotate-globe {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes send-arrow {
+  0%   { opacity: 0; transform: scaleY(0) translateY(0); }
+  30%  { opacity: 1; transform: scaleY(1) translateY(-20px); }
+  70%  { opacity: 1; transform: scaleY(1) translateY(-60px); }
+  100% { opacity: 0; transform: scaleY(0) translateY(-80px); }
+}
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+  50%       { box-shadow: 0 0 40px rgba(16, 185, 129, 0.5); }
+}
+
+.animate-fade-in    { animation: animate-fade-in 0.5s ease-out forwards; }
+.animate-float      { animation: float 4s ease-in-out infinite; }
+.animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-light);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+/* ── Sidebar Layout Offset ───────────────────────────────────────────────── */
+.sidebar-layout { padding-left: 16rem; }
+
+/* ── Table Styles ────────────────────────────────────────────────────────── */
+.table-remit {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-remit th {
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.table-remit td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+.table-remit tr:last-child td { border-bottom: none; }
+.table-remit tr:hover td { background: rgba(16, 185, 129, 0.03); }
+
+/* ── Corridor Badge ──────────────────────────────────────────────────────── */
+.corridor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: monospace;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--color-primary-light);
+}
+
+/* ── Utility ─────────────────────────────────────────────────────────────── */
+.truncate-address {
+  font-family: "Fira Code", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* ── Toast Override ──────────────────────────────────────────────────────── */
+[data-sonner-toaster] {
+  --normal-bg: var(--color-surface) !important;
+  --normal-border: var(--color-border) !important;
+  --normal-text: var(--color-text-primary) !important;
+}

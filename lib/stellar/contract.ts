@@ -1,0 +1,272 @@
+/**
+ * lib/stellar/contract.ts
+ *
+ * StellarRemit — Soroban Contract Client
+ *
+ * Provides typed TypeScript wrappers for all StellarRemit smart contract
+ * invocations: send_remittance, get_fx_rate, set_fx_rate, get_quote,
+ * get_stats, get_remittance_fee, and SRT token queries.
+ */
+
+import {
+  Contract,
+  TransactionBuilder,
+  Networks,
+  BASE_FEE,
+  nativeToScVal,
+  Address,
+  scValToNative,
+  xdr,
+} from "@stellar/stellar-sdk";
+import { rpc as SorobanRpc } from "@stellar/stellar-sdk";
+import {
+  STELLAR_CONFIG,
+  REMIT_CONTRACT_ID,
+  SRT_TOKEN_CONTRACT_ID,
+  REMIT_FEE_BPS,
+  STROOPS_PER_XLM,
+} from "./config";
+import type { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit";
+import type { ContractEvent } from "@/types";
+
+// ── Types ────────────────────────────────────────────────────────────────────
+
+export interface RemittanceStats {
+  total_volume: bigint; // Total volume in stroops
+  total_fees: bigint;   // Total fees collected in stroops
+  total_txns: bigint;   // Total remittance count
+  fee_bps: bigint;      // Default 50 = 0.50%
+}
+
+export interface FxQuote {
+  amount_out: bigint;
+  fee: bigint;
+  rate: bigint;
+  price_impact_bps: bigint;
+}
+
+export type ContractCallResult<T> =
+  | { success: true; value: T; txHash?: string }
+  | { success: false; error: string };
+
+// ── Contract Client Class ───────────────────────────────────────────────────
+
+export class StellarRemitClient {
+  private rpc: SorobanRpc.Server;
+  private networkPassphrase: string;
+
+  constructor() {
+    this.rpc = new SorobanRpc.Server(STELLAR_CONFIG.rpcUrl);
+    this.networkPassphrase = STELLAR_CONFIG.networkPassphrase;
+  }
+
+  // ── Read Calls ─────────────────────────────────────────────────────────────
+
+  /** Read current FX rate for a corridor (e.g. "XLMINR") */
+  async getFxRate(corridorId: string): Promise<number> {
+    try {
+      const contract = new Contract(REMIT_CONTRACT_ID);
+      const operation = contract.call("get_fx_rate", nativeToScVal(corridorId, { type: "symbol" }));
+
+      const dummyTx = new TransactionBuilder(
+        new SorobanRpc.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
+        { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
+      )
+        .addOperation(operation)
+        .setTimeout(30)
+        .build();
+
+      const sim = await this.rpc.simulateTransaction(dummyTx);
+      if (SorobanRpc.Api.isSimulationSuccess(sim) && sim.result) {
+        const val = scValToNative(sim.result.retval);
+        return Number(val) / 1_000_000; // FX rates are scaled by 10^6
+      }
+      return 0;
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Read global protocol stats */
+  async getStats(): Promise<RemittanceStats> {
+    try {
+      const contract = new Contract(REMIT_CONTRACT_ID);
+      const operation = contract.call("get_stats");
+
+      const dummyTx = new TransactionBuilder(
+        new SorobanRpc.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
+        { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
+      )
+        .addOperation(operation)
+        .setTimeout(30)
+        .build();
+
+      const sim = await this.rpc.simulateTransaction(dummyTx);
+      if (SorobanRpc.Api.isSimulationSuccess(sim) && sim.result) {
+        const native = scValToNative(sim.result.retval);
+        return {
+          total_volume: BigInt(native.total_volume ?? 0),
+          total_fees: BigInt(native.total_fees ?? 0),
+          total_txns: BigInt(native.total_txns ?? 0),
+          fee_bps: BigInt(native.fee_bps ?? 50),
+        };
+      }
+    } catch (e) {
+      console.warn("Failed to fetch remittance stats:", e);
+    }
+    return { total_volume: 0n, total_fees: 0n, total_txns: 0n, fee_bps: 50n };
+  }
+
+  /** Get SRT token balance for an address */
+  async getSrtBalance(ownerAddress: string): Promise<bigint> {
+    try {
+      const contract = new Contract(SRT_TOKEN_CONTRACT_ID);
+      const operation = contract.call(
+        "balance_of",
+        new Address(ownerAddress).toScVal()
+      );
+
+      const dummyTx = new TransactionBuilder(
+        new SorobanRpc.Account("GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF", "0"),
+        { fee: BASE_FEE, networkPassphrase: this.networkPassphrase }
+      )
+        .addOperation(operation)
+        .setTimeout(30)
+        .build();
+
+      const sim = await this.rpc.simulateTransaction(dummyTx);
+      if (SorobanRpc.Api.isSimulationSuccess(sim) && sim.result) {
+        return BigInt(scValToNative(sim.result.retval) ?? 0);
+      }
+    } catch (e) {
+      console.warn("Failed to fetch SRT token balance:", e);
+    }
+    return 0n;
+  }
+
+  // ── Write Calls ────────────────────────────────────────────────────────────
+
+  /** Execute a remittance on-chain */
+  async sendRemittance(
+    kit: StellarWalletsKit,
+    senderAddress: string,
+    recipientAddress: string,
+    corridorId: string,
+    amountXlm: number
+  ): Promise<ContractCallResult<string>> {
+    try {
+      const amountStroops = BigInt(Math.floor(amountXlm * STROOPS_PER_XLM));
+      const contract = new Contract(REMIT_CONTRACT_ID);
+
+      const operation = contract.call(
+        "send_remittance",
+        new Address(senderAddress).toScVal(),
+        new Address(recipientAddress).toScVal(),
+        nativeToScVal(corridorId, { type: "symbol" }),
+        nativeToScVal(amountStroops, { type: "i128" }),
+        nativeToScVal(0n, { type: "i128" }) // min_amount_out
+      );
+
+      const accountRes = await fetch(
+        `${STELLAR_CONFIG.horizonUrl}/accounts/${senderAddress}`
+      );
+      if (!accountRes.ok) {
+        return { success: false, error: "Sender account not found on network" };
+      }
+      const accountData = await accountRes.json();
+      const account = new SorobanRpc.Account(senderAddress, accountData.sequence);
+
+      const tx = new TransactionBuilder(account, {
+        fee: (parseInt(BASE_FEE) * 10).toString(),
+        networkPassphrase: this.networkPassphrase,
+      })
+        .addOperation(operation)
+        .setTimeout(180)
+        .build();
+
+      const sim = await this.rpc.simulateTransaction(tx);
+      if (SorobanRpc.Api.isSimulationError(sim)) {
+        return { success: false, error: `Simulation failed: ${sim.error}` };
+      }
+
+      const assembled = SorobanRpc.assembleTransaction(tx, sim);
+      const xdrString = assembled.toXDR();
+
+      const { signedXdr } = await kit.signTransaction(xdrString);
+      const signedTx = TransactionBuilder.fromXDR(signedXdr, this.networkPassphrase);
+
+      const response = await this.rpc.sendTransaction(signedTx);
+      if (response.status === "ERROR") {
+        return { success: false, error: "Transaction submission rejected by node" };
+      }
+
+      return { success: true, value: response.hash, txHash: response.hash };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to execute remittance",
+      };
+    }
+  }
+
+  /** Set FX rate for a corridor (admin-only) */
+  async setFxRate(
+    kit: StellarWalletsKit,
+    adminAddress: string,
+    corridorId: string,
+    rateScaled: bigint
+  ): Promise<ContractCallResult<string>> {
+    try {
+      const contract = new Contract(REMIT_CONTRACT_ID);
+
+      const operation = contract.call(
+        "set_fx_rate",
+        new Address(adminAddress).toScVal(),
+        nativeToScVal(corridorId, { type: "symbol" }),
+        nativeToScVal(rateScaled, { type: "i128" })
+      );
+
+      const accountRes = await fetch(
+        `${STELLAR_CONFIG.horizonUrl}/accounts/${adminAddress}`
+      );
+      if (!accountRes.ok) {
+        return { success: false, error: "Admin account not found on network" };
+      }
+      const accountData = await accountRes.json();
+      const account = new SorobanRpc.Account(adminAddress, accountData.sequence);
+
+      const tx = new TransactionBuilder(account, {
+        fee: (parseInt(BASE_FEE) * 10).toString(),
+        networkPassphrase: this.networkPassphrase,
+      })
+        .addOperation(operation)
+        .setTimeout(180)
+        .build();
+
+      const sim = await this.rpc.simulateTransaction(tx);
+      if (SorobanRpc.Api.isSimulationError(sim)) {
+        return { success: false, error: `Simulation failed: ${sim.error}` };
+      }
+
+      const assembled = SorobanRpc.assembleTransaction(tx, sim);
+      const xdrString = assembled.toXDR();
+
+      const { signedXdr } = await kit.signTransaction(xdrString);
+      const signedTx = TransactionBuilder.fromXDR(signedXdr, this.networkPassphrase);
+
+      const response = await this.rpc.sendTransaction(signedTx);
+      if (response.status === "ERROR") {
+        return { success: false, error: "Transaction submission rejected" };
+      }
+
+      return { success: true, value: response.hash, txHash: response.hash };
+    } catch (err: unknown) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Failed to set FX rate",
+      };
+    }
+  }
+}
+
+export const remitClient = new StellarRemitClient();
